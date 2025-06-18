@@ -1,4 +1,4 @@
-const StellarSdk = require("stellar-sdk");
+const { Server, Networks, Transaction } = require("stellar-sdk");
 
 exports.handler = async function(event) {
   try {
@@ -6,38 +6,27 @@ exports.handler = async function(event) {
     if (!xdr) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ success: false, error: "Missing XDR" })
+        body: JSON.stringify({ success: false, error: "Missing XDR data" })
       };
     }
 
-    const server = new StellarSdk.Server("https://horizon.stellar.org");
-    const tx = new StellarSdk.Transaction(xdr, StellarSdk.Networks.PUBLIC);
-    const response = await server.submitTransaction(tx);
+    const server = new Server("https://horizon.stellar.org");
+    const tx = new Transaction(xdr, Networks.PUBLIC);
+
+    const res = await server.submitTransaction(tx);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, response })
+      body: JSON.stringify({ success: true, result: res })
     };
-
-  } catch (e) {
-    let reason = "Unknown";
-    if (
-      e.response &&
-      e.response.data &&
-      e.response.data.extras &&
-      e.response.data.extras.result_codes
-    ) {
-      reason = e.response.data.extras.result_codes;
-    }
-
+  } catch (err) {
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
-        error: e.message,
-        reason
+        error: err.message,
+        stack: err.stack
       })
     };
   }
 };
-      
