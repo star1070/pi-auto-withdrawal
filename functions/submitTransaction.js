@@ -1,5 +1,4 @@
-
-const { Server, Networks, Transaction } = require("stellar-sdk");
+const { Server, Transaction } = require("stellar-sdk");
 
 exports.handler = async function(event) {
   try {
@@ -12,12 +11,12 @@ exports.handler = async function(event) {
       };
     }
 
-    const server = new Server("https://horizon.stellar.org");
+    // ✅ Use Pi Network's Horizon endpoint
+    const server = new Server("https://api.mainnet.minepi.com");
 
-    // Parse the transaction from XDR for public (mainnet) network
-    const transaction = new Transaction(xdr, Networks.PUBLIC);
+    // ✅ Use Pi Network passphrase (NOT Stellar PUBLIC)
+    const transaction = new Transaction(xdr, "Pi Mainnet");
 
-    // Submit the transaction to the Stellar network
     const response = await server.submitTransaction(transaction);
 
     return {
@@ -25,8 +24,9 @@ exports.handler = async function(event) {
       body: JSON.stringify({ success: true, result: response })
     };
   } catch (e) {
-    console.error("ðŸ”¥ submitTransaction error:", e);
-    let reason = e.response?.data?.extras?.result_codes || "Unknown error";
+    console.error("🔥 submitTransaction error:", e);
+    const reason = e.response?.data?.extras?.result_codes || "Unknown error";
+
     return {
       statusCode: 500,
       body: JSON.stringify({
